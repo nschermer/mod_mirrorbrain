@@ -1521,7 +1521,7 @@ static int mb_handler(request_rec *r)
                                     return HTTP_INTERNAL_SERVER_ERROR;
                                 } else if (nr > n_matches) {
                                     ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, "[mod_mirrorbrain] "
-                                            "cannot substitute $%d in '%s' -- only %d args are defined", 
+                                            "cannot substitute $%zu in '%s' -- only %d args are defined", 
                                             nr, d, y.args->nelts);
                                     return HTTP_INTERNAL_SERVER_ERROR;
                                 }
@@ -3288,24 +3288,24 @@ static int mb_handler(request_rec *r)
         char *tracker = ((char **) scfg->tracker_urls->elts)[0];
         ap_rprintf(r, "d"
                           "8:announce"
-                              "%d:%s", strlen(tracker), tracker);
+                              "%zu:%s", strlen(tracker), tracker);
 
         ap_rputs(         "13:announce-listll", r);
         for (i = 0; i < scfg->tracker_urls->nelts; i++) {
             tracker = ((char **) scfg->tracker_urls->elts)[i];
-            ap_rprintf(r,     "%d:%s", strlen(tracker), tracker);
+            ap_rprintf(r,     "%zu:%s", strlen(tracker), tracker);
         }
         ap_rputs(             "e"
                           "e", r);
 
         ap_rprintf(r,     "7:comment"
-                              "%d:%s", strlen(basename), basename);
+                              "%zu:%s", strlen(basename), basename);
 
                           /* This is meant to be the creation time of the torrent, 
                            * but let's take the mtime of the file since we can generate the
                            * torrent any time */
         ap_rprintf(r,     "10:created by"
-                              "%d:MirrorBrain/%s", 
+                              "%zu:MirrorBrain/%s", 
                               strlen("MirrorBrain/") + strlen(MOD_MIRRORBRAIN_VER), 
                               MOD_MIRRORBRAIN_VER);
         ap_rprintf(r,     "13:creation date"
@@ -3319,7 +3319,7 @@ static int mb_handler(request_rec *r)
         ap_rprintf(r,             "6:md5sum"
                                       "%d:%s", MD5_DIGESTSIZE * 2, hashbag->md5hex);
         ap_rprintf(r,             "4:name"
-                                      "%d:%s"
+                                      "%zu:%s"
                                   "12:piece length"
                                       "i%de"
                                   "6:pieces"
@@ -3349,7 +3349,7 @@ static int mb_handler(request_rec *r)
                               "l", r);
             for (i = 0; i < scfg->dhtnodes->nelts; i++) {
                 dhtnode_t node = ((dhtnode_t *) scfg->dhtnodes->elts)[i];
-                ap_rprintf(r,     "l" "%d:%s" "i%de" "e", strlen(node.name), node.name, 
+                ap_rprintf(r,     "l" "%zu:%s" "i%de" "e", strlen(node.name), node.name, 
                                                          node.port);
             }
             ap_rputs(     "e", r);
@@ -3373,7 +3373,7 @@ static int mb_handler(request_rec *r)
             for (i = 0; i < mirrors_same_prefix->nelts; i++, found_urls++) {
                 mirror = mirrorp[i];
                 APR_ARRAY_PUSH(m, char *) = 
-                    apr_psprintf(r->pool, "%d:%s%s", (strlen(mirror->baseurl) + strlen(filename)),
+                    apr_psprintf(r->pool, "%zu:%s%s", (strlen(mirror->baseurl) + strlen(filename)),
                                                      mirror->baseurl, filename);
             }
             if (!found_urls) {
@@ -3381,7 +3381,7 @@ static int mb_handler(request_rec *r)
                 for (i = 0; i < mirrors_same_as->nelts; i++, found_urls++) {
                     mirror = mirrorp[i];
                     APR_ARRAY_PUSH(m, char *) = 
-                        apr_psprintf(r->pool, "%d:%s%s", (strlen(mirror->baseurl) + strlen(filename)),
+                        apr_psprintf(r->pool, "%zu:%s%s", (strlen(mirror->baseurl) + strlen(filename)),
                                                          mirror->baseurl, filename);
                 }
             }
@@ -3390,7 +3390,7 @@ static int mb_handler(request_rec *r)
                 for (i = 0; i < mirrors_same_country->nelts; i++, found_urls++) {
                     mirror = mirrorp[i];
                     APR_ARRAY_PUSH(m, char *) = 
-                        apr_psprintf(r->pool, "%d:%s%s", (strlen(mirror->baseurl) + strlen(filename)),
+                        apr_psprintf(r->pool, "%zu:%s%s", (strlen(mirror->baseurl) + strlen(filename)),
                                                          mirror->baseurl, filename);
                 }
             }
@@ -3399,7 +3399,7 @@ static int mb_handler(request_rec *r)
                 for (i = 0; i < mirrors_same_region->nelts; i++, found_urls++) {
                     mirror = mirrorp[i];
                     APR_ARRAY_PUSH(m, char *) = 
-                        apr_psprintf(r->pool, "%d:%s%s", (strlen(mirror->baseurl) + strlen(filename)),
+                        apr_psprintf(r->pool, "%zu:%s%s", (strlen(mirror->baseurl) + strlen(filename)),
                                                          mirror->baseurl, filename);
                 }
             }
@@ -3408,14 +3408,14 @@ static int mb_handler(request_rec *r)
                 for (i = 0; i < mirrors_elsewhere->nelts; i++, found_urls++) {
                     mirror = mirrorp[i];
                     APR_ARRAY_PUSH(m, char *) = 
-                        apr_psprintf(r->pool, "%d:%s%s", (strlen(mirror->baseurl) + strlen(filename)),
+                        apr_psprintf(r->pool, "%zu:%s%s", (strlen(mirror->baseurl) + strlen(filename)),
                                                          mirror->baseurl, filename);
                 }
             }
             /* add the redirector, in case there wasn't any mirror */
             if (!found_urls) {
                 APR_ARRAY_PUSH(m, char *) = 
-                    apr_psprintf(r->pool, "%d:http://%s%s", (7 + strlen(r->hostname) + strlen(r->uri)), 
+                    apr_psprintf(r->pool, "%zu:http://%s%s", (7 + strlen(r->hostname) + strlen(r->uri)), 
                                                             r->hostname, r->uri);
             }
 
@@ -3424,7 +3424,7 @@ static int mb_handler(request_rec *r)
              * retrieves a Metalink then and doesn't expect it in that situation. Maybe later */
             APR_ARRAY_PUSH(m, char *) = 
                 apr_psprintf(r->pool,     "8:url-list"
-                                          "%d:http://%s%s", (7 + strlen(r->hostname) + strlen(r->uri)), 
+                                          "%zu:http://%s%s", (7 + strlen(r->hostname) + strlen(r->uri)), 
                                                             r->hostname, r->uri);
 #endif
 
